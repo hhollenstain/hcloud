@@ -10,7 +10,10 @@ from libcloud.compute.providers import get_driver
 #Creating dictionary to map providers to images
 imageMap = {
     'digitalocean' : {
-                     'cent6': '14782952'
+                     'cent5': '6372321',
+                     'cent6': '14782952',
+                     'cent7': '14782842',
+                     'ubuntu14.04': '14782728' 
                   }
 }
 ##
