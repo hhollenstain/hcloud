@@ -6,53 +6,39 @@ from libcloud.compute.types import Provider
 from libcloud.compute.providers import get_driver
 
 
-##
-#Creating dictionary to map providers to images
-imageMap = {
-    'digitalocean' : {
-                     'cent5': '6372321',
-                     'cent6': '14782952',
-                     'cent7': '14782842',
-                     'ubuntu14.04': '14782728' 
-                  }
-}
-##
-#Creating dictionary to map providers to locations
-locationMap = {
-    'digitalocean' : {
-                      'ny': 'nyc3'
-                    }
-}
 
-sizeMap = {
-    'digitalocean' : {
-                      '512mb': '512mb'
-                     }
-}
 
-##
-#
-driverMap = {
+providerMap = {
     'digitalocean' : {
-                     'apikey' : "%s" % os.environ['DIGITAL_OCEAN_API'],
-                     'driver' : 'DIGITAL_OCEAN',
-                     'options' : {
-                                 'backups': False,
-                                 'private_networking': False,
-                                 'ssh_keys': ['c0:b7:81:d8:23:03:f9:2b:5b:1a:05:c8:e5:ef:11:b7']
-                                 } 
-                     }
+        'images' : {
+            'cent5' : '6372321',
+            'cent6' : '14782952',
+            'cent7' : '14782842',
+            'ubuntu14.04' : '14782728' 
+        },
+        'size' : {
+            '512mb' : '512mb'
+        },
+        'locations' : {
+            'ny' : 'nyc3'
+        },
+        'apikey' : "%s" % os.environ['DIGITAL_OCEAN_API'],
+        'driver' : 'DIGITAL_OCEAN',
+        'options' : {
+            'backups' : False,
+            'private_networking' : False,
+            'ssh_keys' : ['c0:b7:81:d8:23:03:f9:2b:5b:1a:05:c8:e5:ef:11:b7']
+        }
+    }
 }
 
 actions = [
-            'build',
-            'list',
-            'power-on',
-            'power-off',
-            'delete',
-          ]
-
-
+             'build',
+             'list',
+             'power-on',
+             'power-off',
+             'delete',
+           ]
 
 ##
 #Name:arg_check
@@ -61,15 +47,13 @@ def arg_check(argcheck):
 	print 'ERROR: Missing argument for %s' % argcheck
 	sys.exit(20)
 
-
-
 def build(driver, provider, size, image, location, name, options=None):
     imageObj = getImageObj(driver, provider, image)
     locationObj = getLocationObj(driver, provider, location)
     sizeObj = getSizeObj(driver, provider, size)
 
     if provider == 'digitalocean':
-    	node = driver.create_node(name, sizeObj, imageObj, locationObj, ex_create_attr=driverMap[provider]['options'])
+    	node = driver.create_node(name, sizeObj, imageObj, locationObj, ex_create_attr=providerMap[provider]['options'])
     	return node
 
 ##
@@ -122,8 +106,6 @@ class __main__():
 	    	arg_check("Action: %s, not valid please use %s" % (args.action, actions)) 
 
     if args.action == "build":
-
-
     	
     	provider = args.driver
     	image = args.image
@@ -132,7 +114,7 @@ class __main__():
     	name = args.name
 
         try:
-        	if driverMap[provider] is None:
+        	if providerMap[provider] is None:
         	    print 'ERROR: %s is not a configured Provider' % provider
         	    sys.exit(1)
         except KeyError:
@@ -140,23 +122,23 @@ class __main__():
             sys.exit(1)
 ##
 #Will need to break out into a def
-        apikey = driverMap[provider]['apikey']
+        apikey = providerMap[provider]['apikey']
         if provider == 'digitalocean':
            cls = get_driver(Provider.DIGITAL_OCEAN)
            driver = cls(apikey, api_version='v2')
 
-        if sizeMap[provider][size] is None:
+        if providerMap[provider]['size'][size] is None:
         	print 'ERROR: %s is not a configured size for Provider %s' % (size, provider)
         	sys.exit(1)
-        if locationMap[provider][location] is None:
+        if providerMap[provider]['locations'][location] is None:
         	print 'ERROR: %s is not a configured location for Provider %s' % (location, provider)
         	sys.exit(1)
-        if imageMap[provider][image] is None:
+        if providerMap[provider]['images'][image] is None:
         	print 'ERROR: %s is not a configured Image for Provider %s' % (image, provider)
         	sys.exit(1)
         if args.name is None:
         	print 'ERROR: Please specify a name for new node'
         	sys.exit(1)
 
-    	node = build(driver, provider, sizeMap[provider][size], imageMap[provider][image], locationMap[provider][location], name)
+    	node = build(driver, provider, providerMap[provider]['size'][size], providerMap[provider]['images'][image], providerMap[provider]['locations'][location], name)
     	print 'Huzzah test: %s' % `node`
