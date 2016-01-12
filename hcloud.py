@@ -81,6 +81,17 @@ def getSizeObj( driver, provider, size):
                 sizeObj = x 
                 break
         return sizeObj
+
+##
+#
+def valid_check( provider, itemObj, itemType):
+    try:
+      if providerMap[provider][itemType][itemObj]:
+        print 'INFO: %s is a valid %s for Provider %s' % (itemObj, itemType, provider)
+    except KeyError:
+      print 'ERROR: %s is not a %s configured for Provider %s' % (itemObj, itemType, provider)
+      sys.exit(1)
+
 ##
 #
 class __main__():
@@ -127,15 +138,10 @@ class __main__():
            cls = get_driver(Provider.DIGITAL_OCEAN)
            driver = cls(apikey, api_version='v2')
 
-        if providerMap[provider]['size'][size] is None:
-        	print 'ERROR: %s is not a configured size for Provider %s' % (size, provider)
-        	sys.exit(1)
-        if providerMap[provider]['locations'][location] is None:
-        	print 'ERROR: %s is not a configured location for Provider %s' % (location, provider)
-        	sys.exit(1)
-        if providerMap[provider]['images'][image] is None:
-        	print 'ERROR: %s is not a configured Image for Provider %s' % (image, provider)
-        	sys.exit(1)
+        valid_check(provider, size, 'size')      
+        valid_check(provider, location, 'locations')
+        valid_check(provider, image, 'images')
+         
         if args.name is None:
         	print 'ERROR: Please specify a name for new node'
         	sys.exit(1)
